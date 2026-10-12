@@ -1,7 +1,10 @@
+
 import { useState } from 'react'
 import Button from '../components/Button'
 import Input from '../components/Input'
 import { Link, useNavigate } from 'react-router-dom'
+import { useUserStore } from '../store/useUserStore'
+import { api } from '../api/api'
 
 const Register = () => {
     const [username, setUsername] = useState('')
@@ -9,8 +12,10 @@ const Register = () => {
     const [password, setPassword] = useState('')
     const [password2, setPassword2] = useState('')
     const [error, setError] = useState('')
+    const [loading, setLoading] = useState(false)
 
     const navigate = useNavigate()
+    const { setSession } = useUserStore()
 
     const handleSubmit = async (e) => {
         e.preventDefault()
@@ -21,29 +26,24 @@ const Register = () => {
             return
         }
 
+        alert(123)
+        setLoading(true)
+        const user = {username, email, password}
         try {
-            const response = await fetch('https://api.kitek-pg.ru/api/marketplace/auth/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    username,
-                    email,
-                    password,
-                }),
-            })
+            const data = await api.registerUser(user)
 
-            const data = await response.json()
-
-            if (response.ok && data.token) {
+            if (data.token) {
+                setSession({ token: data.token, user: data.user })
                 localStorage.setItem('token', data.token)
                 navigate('/')
             } else {
                 setError(data.message || 'Ошибка при регистрации')
             }
         } catch (err) {
+            console.error(err)
             setError('Ошибка соединения с сервером')
+        } finally {
+            setLoading(false)
         }
     }
 
@@ -104,7 +104,7 @@ const Register = () => {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                         />
-                        <div className="form-hint">Минимум 6 символов</div>
+<div className="form-hint">Минимум 6 символов</div>
                     </div>
 
                     <div className="form-group">
@@ -121,8 +121,8 @@ const Register = () => {
                         />
                     </div>
 
-                    <Button type="submit" className="btn-submit">
-                        Зарегистрироваться
+                    <Button type="submit" className="btn-submit" disabled={loading}>
+                        {loading ? 'Регистрация...' : 'Зарегистрироваться'}
                     </Button>
                 </form>
 

@@ -15,7 +15,7 @@ const Login = () => {
         setError("")
 
         try {
-            const response = await fetch('https://api.kitek-pg.ru/api/marketplace/api/auth/login'
+            const response = await fetch('https://api.kitek-pg.ru/api/marketplace/auth/login'
 , {
                 method: 'POST',
                 headers: {
